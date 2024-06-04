@@ -6,64 +6,64 @@ import 'package:flutter_reactive_ble_example/src/ble/ble_device_connector.dart';
 import 'package:flutter_reactive_ble_example/src/ble/ble_device_interactor.dart';
 import 'package:flutter_reactive_ble_example/src/ble/ble_scanner.dart';
 import 'package:flutter_reactive_ble_example/src/ble/ble_status_monitor.dart';
-import 'package:flutter_reactive_ble_example/src/ui/ble_status_screen.dart';
 import 'package:flutter_reactive_ble_example/src/ui/device_list.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_joybuttons/flutter_joybuttons.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
-import 'package:flutter_reactive_ble_example/src/ble/ble_device_connector.dart';
-import 'package:flutter_reactive_ble_example/src/ble/ble_device_interactor.dart';
-import 'package:functional_data/functional_data.dart';
-import 'package:provider/provider.dart';
 import 'package:reactive_ble_platform_interface/src/model/uuid.dart' as ReactiveBleUuid;
-import 'package:uuid/uuid.dart';
 import 'package:permission_handler/permission_handler.dart';
-
 import 'src/ble/ble_logger.dart';
+import 'dart:async';
+import 'package:platform_device_id_v3/platform_device_id.dart'; //doda da bi nasa deviceid
 
 const _themeColor = Colors.lightGreen;
+
+Future<String?> _getInfo() async {
+  return await PlatformDeviceId.getDeviceId;
+}
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final _ble = FlutterReactiveBle();
-  final _bleLogger = BleLogger(ble: _ble);
-  final _scanner = BleScanner(ble: _ble, logMessage: _bleLogger.addToLog);
-  final _monitor = BleStatusMonitor(_ble);
-  final _connector = BleDeviceConnector(
-    ble: _ble,
-    logMessage: _bleLogger.addToLog,
-  );
-  final _serviceDiscoverer = BleDeviceInteractor(
+  final ble = FlutterReactiveBle();
+  final bleLogger = BleLogger(ble: ble);
+  final scanner = BleScanner(ble: ble, logMessage: bleLogger.addToLog);
+  final monitor = BleStatusMonitor(ble);
+  final serviceDiscoverer = BleDeviceInteractor(
     bleDiscoverServices: (deviceId) async {
-      await _ble.discoverAllServices(deviceId);
-      return _ble.getDiscoveredServices(deviceId);
+      await ble.discoverAllServices(deviceId);
+      return ble.getDiscoveredServices(deviceId);
     },
-    logMessage: _bleLogger.addToLog,
-    readRssi: _ble.readRssi,
+    logMessage: bleLogger.addToLog,
+    readRssi: ble.readRssi,
   );
+  final connector = BleDeviceConnector(
+    ble: ble,
+    logMessage: bleLogger.addToLog,
+    bleDeviceInteractor: serviceDiscoverer,
+  );
+  final deviceId = _getInfo();
+
   runApp(
     MultiProvider(
       providers: [
-        Provider.value(value: _scanner),
-        Provider.value(value: _monitor),
-        Provider.value(value: _connector),
-        Provider.value(value: _serviceDiscoverer),
-        Provider.value(value: _bleLogger),
+        Provider.value(value: scanner),
+        Provider.value(value: monitor),
+        Provider.value(value: connector),
+        Provider.value(value: serviceDiscoverer),
+        Provider.value(value: bleLogger),
         StreamProvider<BleScannerState?>(
-          create: (_) => _scanner.state,
+          create: (_) => scanner.state,
           initialData: const BleScannerState(
             discoveredDevices: [],
             scanIsInProgress: false,
           ),
         ),
         StreamProvider<BleStatus?>(
-          create: (_) => _monitor.state,
+          create: (_) => monitor.state,
           initialData: BleStatus.unknown,
         ),
         StreamProvider<ConnectionStateUpdate>(
-          create: (_) => _connector.state,
+          create: (_) => connector.state,
           initialData: const ConnectionStateUpdate(
             deviceId: 'Unknown device',
             connectionState: DeviceConnectionState.disconnected,
@@ -82,7 +82,7 @@ void main() {
 }
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -96,9 +96,8 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _widgetOptions = <Widget>[
-      DeviceListScreen(),
-      JoystickPage(),
-      // Add more pages as needed
+      const DeviceListScreen(),
+      const JoystickPage(),
     ];
   }
 
@@ -135,7 +134,7 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class JoystickPage extends StatelessWidget {
-  const JoystickPage({Key? key}) : super(key: key);
+  const JoystickPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -152,12 +151,12 @@ class JoystickPage extends StatelessWidget {
                 onPressed: () {
                   // Add your onPressed logic here
                 },
-                child: Text('Take a picture'),
+                child: const Text('Take a picture'),
               ),
-              SizedBox(height: 20),
-              JoyButtonsExample(joystickIndex: 1),
-              SizedBox(height: 20),
-              JoyButtonsExample(joystickIndex: 2),
+              const SizedBox(height: 20),
+              const JoyButtonsExample(joystickIndex: 1),
+              const SizedBox(height: 20),
+              const JoyButtonsExample(joystickIndex: 2),
             ],
           ),
         ),
@@ -170,7 +169,7 @@ class JoystickPage extends StatelessWidget {
 class JoyButtonsExample extends StatefulWidget {
   final int joystickIndex;
 
-  const JoyButtonsExample({Key? key, required this.joystickIndex}) : super(key: key);
+  const JoyButtonsExample({super.key, required this.joystickIndex});
 
   @override
   _JoyButtonsExampleState createState() => _JoyButtonsExampleState();
@@ -180,9 +179,11 @@ class _JoyButtonsExampleState extends State<JoyButtonsExample> {
   List<int> _pressed = [];
   double dimension = 45;
 
-  double _sizeOfCenter = 0.4;
-  double _numberOfButtons = 4;
+  final double _sizeOfCenter = 0.4;
+  final double _numberOfButtons = 4;
   final double _maxButtons = 50;
+
+
 
   final _names = List.generate(26, (index) => String.fromCharCode(index + 65));
   final _colors = [
@@ -201,7 +202,7 @@ class _JoyButtonsExampleState extends State<JoyButtonsExample> {
   GestureDetector testButton(String label, MaterialColor color, int index) {
     return GestureDetector(
       onTap: () {
-        sendDataToConnectedDevice(index);
+        sendDataToConnectedDevice(index); // This will send the button index to the connected device
       },
       child: JoyButtonsButton(
         title: Padding(
@@ -213,16 +214,40 @@ class _JoyButtonsExampleState extends State<JoyButtonsExample> {
     );
   }
 
-  void sendDataToConnectedDevice(int buttonIndex) {
-    String deviceId = 'yourDeviceId';
-    String serviceId = '0000180f-0000-1000-8000-00805f9b34fb';
 
-    String characteristicId = 'yourCharacteristicId';
 
-    // Access BLE provider
+  Future<void> sendDataToConnectedDevice(int buttonIndex) async {
+    String? deviceId = await _getInfo();
+
+    if (deviceId == null || deviceId.isEmpty) {
+      print("Device ID is null or empty");
+      return;
+    }
+
+    // Retrieve the BleDeviceInteractor (service discoverer) from the Provider context
+    final serviceDiscoverer = Provider.of<BleDeviceInteractor>(context, listen: false);
+
+    // Discover services on the device
+    List<Service> discoveredServices = await serviceDiscoverer.discoverServices(deviceId);
+
+    if (discoveredServices.isEmpty) {
+      print("No services discovered");
+      return;
+    }
+
+    Service selectedService = discoveredServices.first;
+    String serviceId = selectedService.id.toString();
+
+    if (selectedService.characteristics.isEmpty) {
+      print("No characteristics found in the selected service");
+      return;
+    }
+
+    String characteristicId = selectedService.characteristics.first.id.toString();
+
     final bleConnector = Provider.of<BleDeviceConnector>(context, listen: false);
 
-    // Construct your data to send to the device
+    // Construct data to send to the device
     final dataToSend = '$buttonIndex';
 
     // Convert the data to bytes
@@ -243,6 +268,10 @@ class _JoyButtonsExampleState extends State<JoyButtonsExample> {
       dataBytes,
     );
   }
+
+
+
+
 
   List<Widget> getIndicators(int number) {
     return List.generate(_numberOfButtons.round(), (index) {

@@ -56,7 +56,7 @@ class BleScanner implements ReactiveState<BleScannerState> {
   }
 
   Future<void> dispose() async {
-    await _stateStreamController?.close();
+    await _stateStreamController.close();
   }
 
   StreamSubscription<DiscoveredDevice>? _subscription;

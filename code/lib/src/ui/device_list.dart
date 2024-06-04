@@ -8,7 +8,7 @@ import '../widgets.dart';
 import 'device_detail/device_detail_screen.dart';
 
 class DeviceListScreen extends StatelessWidget {
-  const DeviceListScreen({Key? key}) : super(key: key);
+  const DeviceListScreen({super.key});
 
   @override
   Widget build(BuildContext context) =>
@@ -111,17 +111,17 @@ class _DeviceListState extends State<_DeviceList> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       ElevatedButton(
-                        child: const Text('Scan'),
                         onPressed: !widget.scannerState.scanIsInProgress &&
                                 _isValidUuidInput()
                             ? _startScanning
                             : null,
+                        child: const Text('Scan'),
                       ),
                       ElevatedButton(
-                        child: const Text('Stop'),
                         onPressed: widget.scannerState.scanIsInProgress
                             ? widget.stopScan
                             : null,
+                        child: const Text('Stop'),
                       ),
                     ],
                   ),
@@ -176,7 +176,7 @@ ${device.connectable}
                           },
                         ),
                       )
-                      .toList(),
+                      ,
                 ],
               ),
             ),

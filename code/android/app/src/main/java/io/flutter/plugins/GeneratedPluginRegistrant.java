@@ -16,9 +16,19 @@ public final class GeneratedPluginRegistrant {
   private static final String TAG = "GeneratedPluginRegistrant";
   public static void registerWith(@NonNull FlutterEngine flutterEngine) {
     try {
+      flutterEngine.getPlugins().add(new io.flutter.plugins.deviceinfo.DeviceInfoPlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin device_info, io.flutter.plugins.deviceinfo.DeviceInfoPlugin", e);
+    }
+    try {
       flutterEngine.getPlugins().add(new com.baseflow.permissionhandler.PermissionHandlerPlugin());
     } catch (Exception e) {
       Log.e(TAG, "Error registering plugin permission_handler_android, com.baseflow.permissionhandler.PermissionHandlerPlugin", e);
+    }
+    try {
+      flutterEngine.getPlugins().add(new com.di1shuai.platform_device_id.PlatformDeviceIdPlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin platform_device_id_v3, com.di1shuai.platform_device_id.PlatformDeviceIdPlugin", e);
     }
     try {
       flutterEngine.getPlugins().add(new com.signify.hue.flutterreactiveble.ReactiveBlePlugin());

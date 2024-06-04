@@ -8,8 +8,8 @@ import 'package:provider/provider.dart';
 class CharacteristicInteractionDialog extends StatelessWidget {
   const CharacteristicInteractionDialog({
     required this.characteristic,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
   final Characteristic characteristic;
 
   @override
@@ -21,8 +21,7 @@ class CharacteristicInteractionDialog extends StatelessWidget {
 class _CharacteristicInteractionDialog extends StatefulWidget {
   const _CharacteristicInteractionDialog({
     required this.characteristic,
-    Key? key,
-  }) : super(key: key);
+  });
 
   final Characteristic characteristic;
 

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 
+
 class BleDeviceInteractor {
   BleDeviceInteractor({
     required Future<List<Service>> Function(String deviceId) bleDiscoverServices,
@@ -28,3 +29,29 @@ class BleDeviceInteractor {
     }
   }
 }
+
+/*
+class BleDeviceInteractor {
+  final Future<List<DiscoveredService>> Function(String deviceId) bleDiscoverServices;
+  final void Function(String message) logMessage;
+  final Future<int> Function(String deviceId) readRssi;
+
+  BleDeviceInteractor({
+    required this.bleDiscoverServices,
+    required this.logMessage,
+    required this.readRssi,
+  });
+
+  Future<List<Service>> discoverServices(String deviceId) async {
+    try {
+      _logMessage('Start discovering services for: $deviceId');
+      final result = await _bleDiscoverServices(deviceId);
+      _logMessage('Discovering services finished');
+      return result;
+    } on Exception catch (e) {
+      _logMessage('Error occurred when discovering services: $e');
+      rethrow;
+    }
+  }
+}
+*/

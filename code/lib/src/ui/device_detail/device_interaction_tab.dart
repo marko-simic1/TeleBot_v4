@@ -15,8 +15,8 @@ part 'device_interaction_tab.g.dart';
 class DeviceInteractionTab extends StatelessWidget {
   const DeviceInteractionTab({
     required this.device,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   final DiscoveredDevice device;
 
@@ -61,7 +61,7 @@ class DeviceInteractionViewModel extends $DeviceInteractionViewModel {
   void connect() {
 
     Timer? heartbeatTimer;
-    heartbeatTimer = Timer.periodic(Duration(seconds: 1), (Timer t) {
+    heartbeatTimer = Timer.periodic(const Duration(milliseconds: 10), (Timer t) {
       if (!deviceConnected) {
         deviceConnector.connect(deviceId);
       } else {
@@ -79,8 +79,7 @@ class DeviceInteractionViewModel extends $DeviceInteractionViewModel {
 class _DeviceInteractionTab extends StatefulWidget {
   const _DeviceInteractionTab({
     required this.viewModel,
-    Key? key,
-  }) : super(key: key);
+  });
 
   final DeviceInteractionViewModel viewModel;
 
@@ -189,8 +188,7 @@ class _ServiceDiscoveryList extends StatefulWidget {
   const _ServiceDiscoveryList({
     required this.deviceId,
     required this.discoveredServices,
-    Key? key,
-  }) : super(key: key);
+  });
 
   final String deviceId;
   final List<Service> discoveredServices;

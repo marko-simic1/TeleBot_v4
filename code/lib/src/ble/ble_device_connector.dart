@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter_reactive_ble_example/src/ble/ble_device_interactor.dart';
 
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:flutter_reactive_ble_example/src/ble/reactive_state.dart';
@@ -7,11 +8,16 @@ class BleDeviceConnector extends ReactiveState<ConnectionStateUpdate> {
   BleDeviceConnector({
     required FlutterReactiveBle ble,
     required void Function(String message) logMessage,
+    required BleDeviceInteractor bleDeviceInteractor,
   })  : _ble = ble,
-        _logMessage = logMessage;
+        _logMessage = logMessage,
+        _bleDeviceInteractor = bleDeviceInteractor;
 
   final FlutterReactiveBle _ble;
   final void Function(String message) _logMessage;
+  final BleDeviceInteractor _bleDeviceInteractor;
+
+
 
   @override
   Stream<ConnectionStateUpdate> get state => _deviceConnectionController.stream;
@@ -55,6 +61,7 @@ class BleDeviceConnector extends ReactiveState<ConnectionStateUpdate> {
   Future<void> sendDataToDevice(String deviceId, QualifiedCharacteristic characteristic, List<int> data) async {
     try {
       _logMessage('Sending data to device $deviceId: $data');
+      final services = await _bleDeviceInteractor.discoverServices(deviceId);
       await _ble.writeCharacteristicWithResponse(
         characteristic,
         value: data,
@@ -63,8 +70,6 @@ class BleDeviceConnector extends ReactiveState<ConnectionStateUpdate> {
       _logMessage('Error sending data to device $deviceId: $e');
     }
   }
-
-
 
   Future<void> dispose() async {
     await _deviceConnectionController.close();

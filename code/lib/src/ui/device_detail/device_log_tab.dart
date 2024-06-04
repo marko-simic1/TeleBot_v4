@@ -3,7 +3,7 @@ import 'package:flutter_reactive_ble_example/src/ble/ble_logger.dart';
 import 'package:provider/provider.dart';
 
 class DeviceLogTab extends StatelessWidget {
-  const DeviceLogTab({Key? key}) : super(key: key);
+  const DeviceLogTab({super.key});
 
   @override
   Widget build(BuildContext context) => Consumer<BleLogger>(
@@ -16,8 +16,7 @@ class DeviceLogTab extends StatelessWidget {
 class _DeviceLogTab extends StatelessWidget {
   const _DeviceLogTab({
     required this.messages,
-    Key? key,
-  }) : super(key: key);
+  });
 
   final List<String> messages;
 
