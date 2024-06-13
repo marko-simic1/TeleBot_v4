@@ -11,7 +11,7 @@ NOTIFY_TIMEOUT = 1000
 
 class telebotAdvertisement(Advertisement):
     def __init__(self, index):
-        Advertisement.__init__(self, index, "peripheral")
+        super().__init__(index, "peripheral")
         self.add_local_name("FER WP1")
         self.include_tx_power = False
         self.add_service_uuid("5701")
@@ -20,16 +20,16 @@ class telebotService(Service):
     UUID = "8b0be1f6-ddd3-11ec-9d64-0242ac120002"
 
     def __init__(self, index):
-        Service.__init__(self, index, self.UUID, True)
+        super().__init__(index, self.UUID, True)
         self.add_characteristic(DataCharacteristic(self))
 
 class DataCharacteristic(Characteristic):
     UUID = "ebcb181a-e01f-11ec-9d64-0242ac120002"
 
     def __init__(self, service):
+        super().__init__(self.UUID, ["notify", "write", "read"], service)
         self.notifying = False
         self.joystick_publisher = rospy.Publisher('/turtle1/cmd_vel', Twist, queue_size=10)
-        Characteristic.__init__(self, self.UUID, ["notify", "write", "read"], service)
         self.add_descriptor(DataDescriptor(self))
 
     def get_data(self):
@@ -68,16 +68,18 @@ class DataCharacteristic(Characteristic):
         self.publish_telejoy(received_data)
 
     def publish_telejoy(self, data):
-        # Assuming data is in a format suitable for Twist messages (e.g., x,y,z linear and angular velocities)
+        # Assuming data is in the format "scaledX1,scaledY1,scaledX2,scaledY2"
         parts = data.split(',')
-        if len(parts) == 2:
+        if len(parts) == 4:
             twist_msg = Twist()
-            twist_msg.linear.x = float(parts[0])
-            twist_msg.angular.z = float(parts[1])
+            twist_msg.linear.x = float(parts[0]) / 100  # Scale back to original
+            twist_msg.linear.y = float(parts[1]) / 100
+            twist_msg.angular.x = (float(parts[2]) - 100) / 100  # Scale back to original and adjust for offset
+            twist_msg.angular.y = (float(parts[3]) - 100) / 100
             self.joystick_publisher.publish(twist_msg)
 
     def getDataString(self):
-        # Modify this function to return the joystick data
+        # This function can be modified to return the current joystick data if needed
         return "Joystick data"
 
 class DataDescriptor(Descriptor):
@@ -85,7 +87,7 @@ class DataDescriptor(Descriptor):
     DATA_DESCRIPTOR_VALUE = "Joystick movement data"
 
     def __init__(self, characteristic):
-        Descriptor.__init__(self, self.DATA_DESCRIPTOR_UUID, ["read"], characteristic)
+        super().__init__(self.DATA_DESCRIPTOR_UUID, ["read"], characteristic)
 
     def ReadValue(self, options):
         value = []
@@ -96,7 +98,7 @@ class DataDescriptor(Descriptor):
 
 if __name__ == '__main__':
     rospy.init_node('teleop_turtlesim')
-    
+
     telebotMonitor = telebotMain()
     telebotMonitor.add_service(telebotService(0))
     telebotMonitor.register()
@@ -110,4 +112,3 @@ if __name__ == '__main__':
         pass
     finally:
         telebotMonitor.quit()
-
