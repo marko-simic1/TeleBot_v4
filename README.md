@@ -1,4 +1,4 @@
-# TeleBot app-v4
+# TeleBot app_v4
 
 TeleBot is an crossplatform mobile app that let users to connect to their robot via bluetooth low energy(BLE) and controls them with two joysticks.
 
@@ -27,3 +27,5 @@ For a specific type of robot, you will need to configure telebot_server.py to ha
 ##Contact Information
 
 For any questions you can contact me at marko.simic2@fer.hr
+
+License This project is licensed under the University of Zagreb Faculty of Electrical Engineering and Computing, Laboratory for Robotics and Intelligent Control Systems
