@@ -1,13 +1,12 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:provider/provider.dart';
 import '/src/ble/ble_device_interactor.dart';
 import 'package:flutter_joystick/flutter_joystick.dart';
 import 'dart:async';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
-const ballSize = 20.0;
 const step = 10.0;
 
 class DeviceInteractorScreen extends StatelessWidget {
@@ -32,17 +31,17 @@ class DeviceInteractorScreen extends StatelessWidget {
               return Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.autorenew_outlined, // Add icon
-                    size: 30, // Adjust icon size as needed
+                  Icon(Icons.autorenew_outlined,
+                    size: 30,
                     color: Colors.black87,
                   ),
-                  SizedBox(width: 5), // Add some space between icon and text
+                  SizedBox(width: 5),
                   Text(
                     'Connecting!',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
-                      fontSize: 21, // Increase the font size
+                      fontSize: 21,
                     ),
                   ),
                 ],
@@ -51,23 +50,22 @@ class DeviceInteractorScreen extends StatelessWidget {
               return Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.error_outline_rounded, // Add icon
-                    size: 30, // Adjust icon size as needed
+                  Icon(Icons.error_outline_rounded,
+                    size: 30,
                     color: Colors.red,
                   ),
-                  SizedBox(width: 5), // Add some space between icon and text
+                  SizedBox(width: 5),
                   Text(
                     'Gatt Error!',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Colors.red,
-                      fontSize: 30, // Increase the font size
+                      fontSize: 30,
                     ),
                   ),
                 ],
               );
             }
-
           },
         ),
       ),
@@ -88,16 +86,6 @@ class DeviceInteractor extends StatefulWidget {
 }
 
 class _DeviceInteractorState extends State<DeviceInteractor> {
-  final Uuid _myServiceUuid =
-  Uuid.parse("57d9b5e7-605a-43ce-b25d-59fff4bca211");
-  final Uuid _myCharacteristicUuid =
-  Uuid.parse("bc944239-6e0e-40cb-be0a-a4e693db9172");
-
-  final Uuid _anotherServiceUuid =  Uuid.parse("57d9b5e7-605a-43ce-b25d-59fff4bca211");
-  final Uuid _anotherCharacteristicUuid =  Uuid.parse("bc944239-6e0e-40cb-be0a-a4e693db9172");
-
-  Stream<List<int>>? subscriptionStream;
-  Stream<List<int>>? anotherSubscriptionStream;
 
   @override
   Widget build(BuildContext context) {
@@ -106,19 +94,18 @@ class _DeviceInteractorState extends State<DeviceInteractor> {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         const SizedBox(height: 150),
-        // Add space between the top of the screen and the "connected" text
         const Text(
           'Status: Connected!',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: Colors.green,
-            fontSize: 24, // Increase the font size
+            fontSize: 24,
           ),
         ),
-        const SizedBox(height: 350), // Add space between text and button
+        const SizedBox(height: 350),
         SizedBox(
-          width: 200, // Set the desired width
-          height: 60, // Set the desired height
+          width: 200,
+          height: 60,
           child: ElevatedButton.icon(
             onPressed: () {
               Navigator.push(
@@ -128,15 +115,15 @@ class _DeviceInteractorState extends State<DeviceInteractor> {
                 ),
               );
             },
-            icon: const Icon(Icons.videogame_asset), // Use an appropriate icon
+            icon: const Icon(Icons.videogame_asset),
             label: const Text(
               'Joystick',
               style: TextStyle(
-                fontSize: 20, // Increase the font size of the button text
+                fontSize: 20,
               ),
             ),
             style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.all(16), // Adjust padding for larger button
+              padding: const EdgeInsets.all(16),
             ),
           ),
         ),
@@ -145,54 +132,122 @@ class _DeviceInteractorState extends State<DeviceInteractor> {
   }
 }
 
-
 class JoystickExample extends StatefulWidget {
-  final String deviceId; // Add this line
-  const JoystickExample({Key? key, required this.deviceId}) : super(key: key); // Modify constructor
+  final String deviceId;
+  const JoystickExample({Key? key, required this.deviceId}) : super(key: key);
 
   @override
   State<JoystickExample> createState() => _JoystickExampleState();
 }
 
-
 class _JoystickExampleState extends State<JoystickExample> {
-  double _x = 100;
-  double _y = 350;
+  double _x1 = 0;
+  double _y1 = 0;
+  double _x2 = 0;
+  double _y2 = 0;
+
   JoystickMode _joystickMode = JoystickMode.all;
+
+  final Uuid _myServiceUuid = Uuid.parse("8b0be1f6-ddd3-11ec-9d64-0242ac120002");
+  final Uuid _myCharacteristicUuid = Uuid.parse("ebcb181a-e01f-11ec-9d64-0242ac120002");
+
+  StreamSubscription<List<int>>? _subscription;
 
   @override
   void didChangeDependencies() {
-    _x = MediaQuery.of(context).size.width / 2 - ballSize / 2;
     super.didChangeDependencies();
+    _subscribeToCharacteristic(widget.deviceId);
   }
 
-
-  void _onJoystickMove(double dx, double dy) {
-    setState(() {
-      _x += dx * step;
-      _y += dy * step;
-    });
-
-    sendDataToConnectedDevice(_x, _y, widget.deviceId);
-  }
-
-
-  Future<void> sendDataToConnectedDevice(double x, double y, String deviceId) async {
+  void _subscribeToCharacteristic(String deviceId) {
     final deviceInteractor = Provider.of<BleDeviceInteractor>(context, listen: false);
-
-    final dataToSend = '$x,$y';
-
-    List<int> dataBytes = utf8.encode(dataToSend);
-
     final characteristic = QualifiedCharacteristic(
-      serviceId: Uuid.parse("57d9b5e7-605a-43ce-b25d-59fff4bca211"),
-      characteristicId: Uuid.parse("bc944239-6e0e-40cb-be0a-a4e693db9172"),
+      serviceId: _myServiceUuid,
+      characteristicId: _myCharacteristicUuid,
       deviceId: deviceId,
     );
 
-    await deviceInteractor.writeCharacterisiticWithResponse(characteristic, dataBytes);
+    _subscription = deviceInteractor.subScribeToCharacteristic(characteristic).listen(
+          (data) {
+        // Handle the received data
+        final receivedString = utf8.decode(data);
+        print('Received data: $receivedString');
+      },
+      onError: (error) {
+        // Handle the error
+        print('Error: $error');
+      },
+    );
   }
 
+  void _onJoystickMove1(double dx, double dy) {
+    setState(() {
+      _x1 += dx * step;
+      _y1 += dy * step;
+    });
+    print('x1,y1:, $_x1, $_y1');
+    _sendData();
+  }
+
+  void _onJoystickMove2(double dx, double dy) {
+    setState(() {
+      _x2 += dx * step;
+      _y2 += dy * step;
+    });
+    print('x1,y1:, $_x2, $_y2');
+    _sendData();
+  }
+  void _sendData() {
+    // Define the maximum linear and angular speeds for the turtlesim
+    const double maxLinearSpeed = 2.0; // Adjust as needed
+    const double maxAngularSpeed = 2.0; // Adjust as needed
+
+    // Scale the joystick values to the turtlesim's range
+    double scaledX1 = _x1 * maxLinearSpeed; // Scale X1 for linear speed
+    double scaledY1 = _y1 * maxAngularSpeed; // Scale Y1 for angular speed
+    double scaledX2 = _x2 * maxLinearSpeed; // Scale X2 for linear speed
+    double scaledY2 = _y2 * maxAngularSpeed; // Scale Y2 for angular speed
+
+    // Create the data string to send
+    String dataToSend = '${scaledX1.toStringAsFixed(2)},${scaledY1.toStringAsFixed(2)},'
+        '${scaledX2.toStringAsFixed(2)},${scaledY2.toStringAsFixed(2)}';
+    List<int> dataBytes = utf8.encode(dataToSend);
+
+    // Send the data to the connected device
+    sendDataToConnectedDevice(dataBytes, widget.deviceId);
+  }
+
+/*
+  void _sendData() {
+    double scaledX1 = (_x1 * 100).clamp(0, 100);
+    double scaledY1 = (_y1 * 100).clamp(0, 100);
+    double scaledX2 = (_x2 * 100).clamp(100, 200);
+    double scaledY2 = (_y2 * 100).clamp(100, 200);
+
+    String dataToSend = '${scaledX1.toInt()},${scaledY1.toInt()},${scaledX2.toInt()},${scaledY2.toInt()}';
+    List<int> dataBytes = utf8.encode(dataToSend);
+
+    sendDataToConnectedDevice(dataBytes, widget.deviceId);
+  }
+*/
+  Future<void> sendDataToConnectedDevice(List<int> data, String deviceId) async {
+    final deviceInteractor = Provider.of<BleDeviceInteractor>(context, listen: false);
+
+    final characteristic = QualifiedCharacteristic(
+      serviceId: _myServiceUuid,
+      characteristicId: _myCharacteristicUuid,
+      deviceId: deviceId,
+    );
+
+    await deviceInteractor.writeCharacterisiticWithoutResponse(characteristic, data);
+    print('sent data');
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -212,35 +267,24 @@ class _JoystickExampleState extends State<JoystickExample> {
         ],
       ),
       body: SafeArea(
-        child: Stack(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Container(
-              color: Colors.grey,
-            ),
-            Ball(_x, _y),
-            Align(
-              alignment: const Alignment(0, 0.8),
+            Center(
               child: Joystick(
                 mode: _joystickMode,
                 listener: (details) {
-                  setState(() {
-                    _x += step * details.x;
-                    _y += step * details.y;
-                  });
-                  _onJoystickMove(details.x, details.y);
+                  _onJoystickMove1(details.x, details.y);
                 },
               ),
             ),
-            Align(
-              alignment: const Alignment(0, -0.8),
+            SizedBox(height: 200),
+            Center(
               child: Joystick(
                 mode: _joystickMode,
                 listener: (details) {
-                  setState(() {
-                    _x += step * details.x;
-                    _y += step * details.y;
-                  });
-                  _onJoystickMove(details.x, details.y);
+                  _onJoystickMove2(details.x, details.y);
                 },
               ),
             ),
@@ -255,9 +299,7 @@ class JoystickModeDropdown extends StatelessWidget {
   final JoystickMode mode;
   final ValueChanged<JoystickMode> onChanged;
 
-  const JoystickModeDropdown(
-      {Key? key, required this.mode, required this.onChanged})
-      : super(key: key);
+  const JoystickModeDropdown({Key? key, required this.mode, required this.onChanged}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -272,15 +314,10 @@ class JoystickModeDropdown extends StatelessWidget {
               onChanged(v as JoystickMode);
             },
             items: const [
-              DropdownMenuItem(
-                  value: JoystickMode.all, child: Text('All Directions')),
-              DropdownMenuItem(
-                  value: JoystickMode.horizontalAndVertical,
-                  child: Text('Vertical And Horizontal')),
-              DropdownMenuItem(
-                  value: JoystickMode.horizontal, child: Text('Horizontal')),
-              DropdownMenuItem(
-                  value: JoystickMode.vertical, child: Text('Vertical')),
+              DropdownMenuItem(value: JoystickMode.all, child: Text('All Directions')),
+              DropdownMenuItem(value: JoystickMode.horizontalAndVertical, child: Text('Vertical And Horizontal')),
+              DropdownMenuItem(value: JoystickMode.horizontal, child: Text('Horizontal')),
+              DropdownMenuItem(value: JoystickMode.vertical, child: Text('Vertical')),
             ],
           ),
         ),
@@ -288,35 +325,3 @@ class JoystickModeDropdown extends StatelessWidget {
     );
   }
 }
-
-class Ball extends StatelessWidget {
-  final double x;
-  final double y;
-
-  const Ball(this.x, this.y, {Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Positioned(
-      left: x,
-      top: y,
-      child: Container(
-        width: ballSize,
-        height: ballSize,
-        decoration: const BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.grey,
-
-        ),
-        child: Icon(
-          Icons.api_rounded,
-          color: Colors.white,
-          size: 50,
-        ),
-      ),
-    );
-  }
-}
-
-
-

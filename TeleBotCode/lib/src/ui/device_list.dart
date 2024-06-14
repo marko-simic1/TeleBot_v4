@@ -8,6 +8,8 @@ import 'device_interactor_screen.dart';
 import '../ble/ble_logger.dart';
 import '../widgets.dart';
 import 'device_detail/device_detail_screen.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+
 
 class DeviceListScreen extends StatelessWidget {
   const DeviceListScreen({Key? key}) : super(key: key);

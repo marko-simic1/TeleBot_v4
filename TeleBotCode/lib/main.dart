@@ -12,6 +12,8 @@ import 'package:permission_handler/permission_handler.dart';
 import 'src/ble/ble_logger.dart';
 import 'dart:async';
 import 'src/ui/ble_status_screen.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+
 
 const _themeColor = Colors.lightGreen;
 
@@ -67,16 +69,19 @@ void main() {
         title: 'Flutter Reactive BLE example',
         color: _themeColor,
         theme: ThemeData(primarySwatch: _themeColor),
-        home: const HomeScreen(),
+        home: HomeScreen(),
       ),
     ),
   );
 }
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({
+  HomeScreen({
     Key? key,
   }) : super(key: key);
+
+  final List<BluetoothDevice> devicesList = <BluetoothDevice>[];
+  final Map<Guid, List<int>> readValues = <Guid, List<int>>{};
 
   @override
   _HomeScreenState createState() => _HomeScreenState();

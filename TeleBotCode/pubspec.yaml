@@ -13,6 +13,7 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_joybuttons: ^1.0.3
+  flutter_blue_plus: ^1.32.1
   flutter_joystick: ^0.0.4
   flutter_reactive_ble: ^5.3.1
   platform_device_id_v3: ^1.0.0
