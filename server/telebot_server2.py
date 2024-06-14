@@ -6,6 +6,9 @@ from geometry_msgs.msg import Twist
 from advertisement import Advertisement
 from server import telebotMain, Service, Characteristic, Descriptor
 
+maxLinearSpeed = 2.0
+maxAngularSpeed = 2.0
+
 GATT_CHRC_IFACE = "org.bluez.GattCharacteristic1"
 NOTIFY_TIMEOUT = 1000
 
@@ -72,10 +75,12 @@ class DataCharacteristic(Characteristic):
         parts = data.split(',')
         if len(parts) == 4:
             twist_msg = Twist()
-            twist_msg.linear.x = float(parts[0]) / 100  # Scale back to original
-            twist_msg.linear.y = float(parts[1]) / 100
-            twist_msg.angular.x = (float(parts[2]) - 100) / 100  # Scale back to original and adjust for offset
-            twist_msg.angular.y = (float(parts[3]) - 100) / 100
+            twist_msg.linear.x = float(parts[0]) / maxLinearSpeed
+            twist_msg.angular.z = float(parts[1]) / maxAngularSpeed
+            #twist_msg.linear.x = float(parts[0]) / 100  # Scale back to original
+            #twist_msg.linear.y = float(parts[1]) / 100
+            #twist_msg.angular.x = (float(parts[2]) - 100) / 100  # Scale back to original and adjust for offset
+            #twist_msg.angular.y = (float(parts[3]) - 100) / 100
             self.joystick_publisher.publish(twist_msg)
 
     def getDataString(self):
