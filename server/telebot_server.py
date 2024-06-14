@@ -10,7 +10,7 @@ NOTIFY_TIMEOUT = 1000
 class telebotAdvertisement(Advertisement):
     def __init__(self, index):
         Advertisement.__init__(self, index, "peripheral")
-        self.add_local_name("FER WP1")
+        self.add_local_name("TELEBOT_SERVER")
         self.include_tx_power = False
         self.add_service_uuid("5701")
 
