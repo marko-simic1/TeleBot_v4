@@ -194,7 +194,7 @@ class _JoystickExampleState extends State<JoystickExample> {
       _x2 += dx * step;
       _y2 += dy * step;
     });
-    print('x1,y1:, $_x2, $_y2');
+    print('x2,y2:, $_x2, $_y2');
     _sendData();
   }
   void _sendData() {
@@ -209,8 +209,7 @@ class _JoystickExampleState extends State<JoystickExample> {
     double scaledY2 = _y2 * maxAngularSpeed; // Scale Y2 for angular speed
 
     // Create the data string to send
-    String dataToSend = '${scaledX1.toStringAsFixed(2)},${scaledY1.toStringAsFixed(2)},'
-        '${scaledX2.toStringAsFixed(2)},${scaledY2.toStringAsFixed(2)}';
+    String dataToSend = '${scaledX1.toStringAsFixed(2)},${scaledY1.toStringAsFixed(2)},${scaledX2.toStringAsFixed(2)},${scaledY2.toStringAsFixed(2)}';
     List<int> dataBytes = utf8.encode(dataToSend);
 
     // Send the data to the connected device
