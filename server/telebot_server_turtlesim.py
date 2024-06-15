@@ -76,7 +76,7 @@ class DataCharacteristic(Characteristic):
         if len(parts) == 4:
             twist_msg = Twist()
             twist_msg.linear.x = float(parts[0]) / maxLinearSpeed
-            twist_msg.angular.z = float(parts[1]) / maxAngularSpeed
+            twist_msg.angular.z = float(parts[2]) / maxAngularSpeed
             #twist_msg.linear.x = float(parts[0]) / 100  # Scale back to original
             #twist_msg.linear.y = float(parts[1]) / 100
             #twist_msg.angular.x = (float(parts[2]) - 100) / 100  # Scale back to original and adjust for offset
